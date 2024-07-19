@@ -1,0 +1,2 @@
+"use strict";(self["webpackChunkhello_keycloak"]=self["webpackChunkhello_keycloak"]||[]).push([[541],{2509:function(e,l,o){o.r(l),o.d(l,{default:function(){return h}});var t=function(){var e=this,l=e._self._c;return l("div",[l("h1",[e._v("This is a secret about page. You should only be able to see this if you are authenticated.")]),l("h3",[e._v("This is what my token looks like:")]),l("code",[e._v(e._s(e.$keycloak.tokenParsed))])])},s=[],u=o(1001),a={},n=(0,u.Z)(a,t,s,!1,null,null,null),h=n.exports}}]);
+//# sourceMappingURL=secret-legacy.02e8c628.js.map
