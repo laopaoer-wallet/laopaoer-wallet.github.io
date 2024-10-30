@@ -1,6 +1,6 @@
 {
-    "name": "pixel_run",
-    "short_name": "pixel_run",
+    "name": "flutter_flame",
+    "short_name": "flutter_flame",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
