@@ -1,38 +1,141 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  <base href="/">
-
-  <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
-
-  <!-- iOS meta tags & icons -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="yoyo">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
-
-  <title>yoyo</title>
-  <link rel="manifest" href="manifest.json">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Training Details</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        .photo-grid img {
+            transition: transform 0.3s ease;
+        }
+        .photo-grid img:hover {
+            transform: scale(1.05);
+        }
+        .refresh-indicator {
+            transition: opacity 0.3s ease;
+        }
+    </style>
 </head>
-<body>
-  <script src="flutter_bootstrap.js" async></script>
+<body class="bg-gray-100 min-h-screen">
+    <div id="app" class="container mx-auto p-4">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h1 class="text-2xl font-bold text-gray-800 mb-2">Student Training Details</h1>
+            <p class="text-gray-600">Pull down to refresh the data</p>
+        </div>
+
+        <!-- Refresh Indicator -->
+        <div id="refreshIndicator" class="text-center text-gray-500 opacity-0">
+            <svg class="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Loading...</span>
+        </div>
+
+        <!-- Student Details -->
+        <div id="studentDetails" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Student Information</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <p><strong>Student Name:</strong> <span id="studentName"></span></p>
+                    <p><strong>Student No:</strong> <span id="studentNo"></span></p>
+                    <p><strong>Certificate No:</strong> <span id="certNum"></span></p>
+                    <p><strong>Training Type:</strong> <span id="trainType"></span></p>
+                </div>
+                <div>
+                    <p><strong>Coach Name:</strong> <span id="coachName"></span></p>
+                    <p><strong>Vehicle Type:</strong> <span id="vehicleType"></span></p>
+                    <p><strong>Training Phase:</strong> <span id="trainPhase"></span></p>
+                    <p><strong>Teach Date:</strong> <span id="teachDate"></span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Photo Gallery -->
+        <div id="photoGallery" class="bg-white rounded-lg shadow-md p-6 hidden">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Training Photos</h2>
+            <div id="photoGrid" class="photo-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://cate.gqlife.cn/zsxscx/api/stu/detail/13963689/430424200207198261';
+
+        function fetchData() {
+            const refreshIndicator = document.getElementById('refreshIndicator');
+            refreshIndicator.classList.remove('opacity-0');
+            refreshIndicator.classList.add('opacity-100');
+
+            axios.get(API_URL)
+                .then(response => {
+                    if (response.data.code === 0) {
+                        displayData(response.data.data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                })
+                .finally(() => {
+                    refreshIndicator.classList.remove('opacity-100');
+                    refreshIndicator.classList.add('opacity-0');
+                });
+        }
+
+        function displayData(data) {
+            // Student Details
+            const studentDetails = document.getElementById('studentDetails');
+            studentDetails.classList.remove('hidden');
+            document.getElementById('studentName').textContent = data.detail.student_name;
+            document.getElementById('studentNo').textContent = data.detail.student_no;
+            document.getElementById('certNum').textContent = data.detail.cert_num;
+            document.getElementById('trainType').textContent = data.detail.train_type;
+            document.getElementById('coachName').textContent = data.detail.coach_name;
+            document.getElementById('vehicleType').textContent = data.detail.vehicle_type;
+            document.getElementById('trainPhase').textContent = data.detail.train_phase;
+            document.getElementById('teachDate').textContent = data.detail.teach_date;
+
+            // Photo Gallery
+            const photoGrid = document.getElementById('photoGrid');
+            const photoGallery = document.getElementById('photoGallery');
+            photoGallery.classList.remove('hidden');
+            photoGrid.innerHTML = '';
+            data.photoList.forEach(photo => {
+                const photoItem = document.createElement('div');
+                photoItem.className = 'relative overflow-hidden rounded-lg';
+                photoItem.innerHTML = `
+                    <img src="${photo.furl}" alt="Training Photo" class="w-full h-48 object-cover">
+                    <div class="absolute bottom-0 bg-black bg-opacity-50 text-white p-2 w-full">
+                        <p class="text-sm">Date: ${photo.teach_date}</p>
+                        <p class="text-sm">Event: ${photo.event_type}</p>
+                    </div>
+                `;
+                photoGrid.appendChild(photoItem);
+            });
+        }
+
+        // Pull to Refresh
+        let startY = 0;
+        let isPulling = false;
+
+        document.addEventListener('touchstart', e => {
+            startY = e.touches[0].pageY;
+            isPulling = window.scrollY === 0;
+        });
+
+        document.addEventListener('touchmove', e => {
+            if (!isPulling) return;
+            const currentY = e.touches[0].pageY;
+            if (currentY - startY > 100) {
+                fetchData();
+                isPulling = false;
+            }
+        });
+
+        // Initial Fetch
+        fetchData();
+    </script>
 </body>
 </html>
