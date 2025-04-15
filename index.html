@@ -3,62 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API POST Request Every 10 Seconds</title>
+    <title>API Request Dashboard</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            text-align: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: url('https://r2.mrcdev.eu.org/WechatIMG69.jpg') no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
         }
-        #result {
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            min-height: 50px;
+        .container {
+            background: rgba(255, 255, 255, 0.9); /* 半透明白色背景 */
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            padding: 24px;
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            font-size: 24px;
+            color: #1a202c;
+            margin: 0 0 20px;
+            text-align: center;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        #output {
+            white-space: pre-wrap;
+            background: rgba(247, 250, 252, 0.95);
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            min-height: 100px;
+            font-size: 14px;
+            color: #2d3748;
+            transition: opacity 0.3s ease;
+        }
+        #output.fade {
+            opacity: 0.5;
+        }
+        #status, #countdown {
+            margin-top: 12px;
+            font-size: 14px;
+            text-align: center;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        #status {
+            color: #4a5568;
+        }
+        #countdown {
+            font-weight: 600;
+            color: #3182ce;
+            transition: color 0.3s ease;
+        }
+        @media (max-width: 480px) {
+            .container {
+                padding: 16px;
+            }
+            h1 {
+                font-size: 20px;
+            }
+            #output {
+                font-size: 12px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Training Hours API POST Request</h1>
-    <p>Fetching data every 10 seconds...</p>
-    <div id="result">Waiting for response...</div>
+    <div class="container">
+        <h1>API Response Dashboard</h1>
+        <div id="output">Fetching data...</div>
+        <div id="status">Status: Waiting...</div>
+        <div id="countdown">Next refresh in 10 seconds</div>
+    </div>
 
     <script>
-        async function fetchTrainingHours() {
-            const url = 'https://cate.gqlife.cn/zsxscx/api/stu/getTotalHour';
-            const resultDiv = document.getElementById('result');
-            const payload = {
-                vehicleType: 'C1',
-                idNum: '430424200207198261',
-                trainPhase: 2
-            };
-
+        async function fetchData() {
+            const url = 'https://cate.gqlife.cn/zsxscx/api/stu/getTotalHour?vehicleType=C1&idNum=430424200207198261&trainPhase=2';
+            const outputElement = document.getElementById('output');
+            outputElement.classList.add('fade');
             try {
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
-                        // Add 'Authorization': 'Bearer <token>' if required
-                    },
-                    body: JSON.stringify(payload)
+                    }
                 });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    resultDiv.textContent = JSON.stringify(data, null, 2);
-                } else {
-                    resultDiv.textContent = `Error: ${response.status} - ${response.statusText}`;
-                }
+                const data = await response.text();
+                outputElement.textContent = data;
+                document.getElementById('status').textContent = `Status: ${response.status} (${response.statusText})`;
             } catch (error) {
-                resultDiv.textContent = `Network Error: ${error.message}`;
+                outputElement.textContent = 'Error: ' + error.message;
+                document.getElementById('status').textContent = 'Status: Error';
+            } finally {
+                outputElement.classList.remove('fade');
             }
         }
 
-        // Fetch immediately on page load
-        fetchTrainingHours();
+        function startCountdown() {
+            let seconds = 10;
+            const countdownElement = document.getElementById('countdown');
+            
+            const countdownInterval = setInterval(() => {
+                seconds--;
+                if (seconds <= 0) {
+                    seconds = 10;
+                    countdownElement.textContent = 'Refreshing...';
+                } else {
+                    countdownElement.textContent = `Next refresh in ${seconds} seconds`;
+                }
+            }, 1000);
 
-        // Fetch every 10 seconds
-        setInterval(fetchTrainingHours, 10000);
+            return countdownInterval;
+        }
+
+        // Fetch data immediately and then every 10 seconds
+        fetchData();
+        const countdownInterval = startCountdown();
+        setInterval(() => {
+            fetchData();
+        }, 10000);
     </script>
 </body>
 </html>
