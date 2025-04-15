@@ -128,6 +128,18 @@
             font-weight: bold;
             box-shadow: 0 2px 4px rgba(255, 64, 129, 0.3);
         }
+        .footer {
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px dashed #ffb6c1;
+            text-align: center;
+            font-size: 13px;
+            color: #e91e63;
+            line-height: 1.5;
+        }
+        .footer p {
+            margin: 4px 0;
+        }
         @media (max-width: 480px) {
             .container {
                 padding: 22px;
@@ -139,6 +151,9 @@
                 padding: 8px 28px 8px 14px;
                 font-size: 14px;
                 height: 40px;
+            }
+            .footer {
+                font-size: 12px;
             }
         }
     </style>
@@ -158,6 +173,11 @@
         </div>
         <div id="output">请选择考试科目，系统将自动获取学时数据...</div>
         <div id="countdown"></div>
+        
+        <div class="footer">
+            <p>© 2025 学时查询系统 | 设计 by 可爱de艳艳宝贝</p>
+            <p>❤️ 感谢您的使用 ❤️</p>
+        </div>
     </div>
 
     <script>
