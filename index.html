@@ -112,22 +112,6 @@
             color: #d32f2f;
             background-color: rgba(255, 205, 210, 0.5);
         }
-        .notification-badge {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background-color: #ff4081;
-            color: white;
-            border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: bold;
-            box-shadow: 0 2px 4px rgba(255, 64, 129, 0.3);
-        }
         .footer {
             margin-top: 24px;
             padding-top: 16px;
@@ -165,22 +149,8 @@
         .content-section.active {
             display: block;
         }
-        .detail-btn {
-            background-color: #ff4081;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 13px;
-            margin-top: 10px;
-            transition: all 0.3s ease;
-        }
-        .detail-btn:hover {
-            background-color: #d81b60;
-        }
         .training-list {
-            max-height: 300px;
+            max-height: 400px;
             overflow-y: auto;
             margin-top: 15px;
             background: rgba(255, 249, 250, 0.95);
@@ -189,27 +159,59 @@
             border: 1px solid #ffb6c1;
         }
         .training-item {
-            padding: 10px;
+            padding: 12px;
             border-bottom: 1px dashed #ffb6c1;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
         }
-        .training-item:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
+        .training-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
         }
         .training-date {
             font-weight: bold;
             color: #e91e63;
+            font-size: 15px;
         }
         .training-duration {
             color: #c2185b;
+            font-weight: 500;
         }
-        .training-status {
+        .training-detail-row {
+            display: flex;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+        .detail-label {
+            color: #d81b60;
+            min-width: 80px;
+            font-weight: 500;
+        }
+        .detail-value {
+            color: #c2185b;
+            flex: 1;
+        }
+        .status-badge {
             display: inline-block;
-            padding: 2px 6px;
-            border-radius: 4px;
+            padding: 2px 8px;
+            border-radius: 12px;
             font-size: 12px;
+            font-weight: bold;
             margin-left: 8px;
+        }
+        .status-archive {
+            background-color: rgba(76, 175, 80, 0.15);
+            color: #2e7d32;
+        }
+        .status-failed {
+            background-color: rgba(244, 67, 54, 0.15);
+            color: #c62828;
+        }
+        .status-audit {
+            background-color: rgba(255, 152, 0, 0.15);
+            color: #e65100;
         }
         .status-approved {
             background-color: rgba(76, 175, 80, 0.2);
@@ -241,6 +243,12 @@
             .tab {
                 padding: 8px 12px;
                 font-size: 14px;
+            }
+            .training-detail-row {
+                flex-direction: column;
+            }
+            .detail-label {
+                margin-bottom: 2px;
             }
         }
     </style>
@@ -293,7 +301,7 @@
         </div>
     </div>
 
-    <script type="65a20e11fd5f0f17b8f3c794-text/javascript">
+    <script>
         // 请求通知权限
         function requestNotificationPermission() {
             if ('Notification' in window) {
@@ -434,50 +442,94 @@
                 }
 
                 const data = await response.json();
-                renderTrainingList(data.data);
+                renderTrainingList(data.rows);
             } catch (error) {
                 trainingListElement.innerHTML = `<div style="color: #d32f2f; padding: 20px; text-align: center;">错误: ${error.message}</div>`;
                 console.error('API错误:', error);
             }
         }
 
-        function renderTrainingList(data) {
-            if (!data || !data.length) {
+        function renderTrainingList(rows) {
+            if (!rows || !rows.length) {
                 trainingListElement.innerHTML = '<div style="text-align: center; padding: 20px; color: #e91e63;">暂无训练记录</div>';
                 return;
             }
 
             let html = '';
-            data.forEach(item => {
-                const date = new Date(item.startTime);
-                const dateStr = date.toLocaleDateString();
-                const timeStr = date.toLocaleTimeString();
-                const duration = item.duration || '未知';
+            rows.forEach(row => {
+                const item = row.cell;
+                const startTime = new Date(item.teach_date);
+                const endTime = new Date(item.teach_end_time);
+                const duration = Math.round((endTime - startTime) / (1000 * 60)); // 计算分钟数
                 
-                let statusClass = '';
-                let statusText = '';
+                // 格式化时间显示
+                const dateStr = startTime.toLocaleDateString();
+                const timeStr = `${startTime.toLocaleTimeString('zh-CN', {hour: '2-digit', minute:'2-digit'})} - ${endTime.toLocaleTimeString('zh-CN', {hour: '2-digit', minute:'2-digit'})}`;
                 
-                // 根据审核状态设置不同的样式
-                if (item.auditStatus === '1') {
-                    statusClass = 'status-approved';
-                    statusText = '已通过';
-                } else if (item.auditStatus === '0') {
-                    statusClass = 'status-pending';
-                    statusText = '待审核';
+                // 备案状态标签
+                const archiveStatus = item.is_archive === '1' ? 
+                    `<span class="status-badge status-archive">${item.is_archive_cn}</span>` : 
+                    `<span class="status-badge status-failed">${item.is_archive_cn}</span>`;
+                
+                // 审核状态标签
+                let auditStatus = '';
+                if (item.pro_audit_tag === '1') {
+                    auditStatus = `<span class="status-badge status-approved">${item.pro_audit_tag_cn}</span>`;
+                } else if (item.pro_audit_tag === '2') {
+                    auditStatus = `<span class="status-badge status-approved">${item.pro_audit_tag_cn}</span>`;
+                } else if (item.pro_audit_tag === '3') {
+                    auditStatus = `<span class="status-badge status-approved">${item.pro_audit_tag_cn}</span>`;
                 } else {
-                    statusClass = 'status-rejected';
-                    statusText = '未通过';
+                    auditStatus = `<span class="status-badge status-pending">${item.pro_audit_tag_cn}</span>`;
                 }
                 
                 html += `
                     <div class="training-item">
-                        <div class="training-date">${dateStr} ${timeStr}</div>
-                        <div class="training-duration">
-                            训练时长: ${duration}分钟
-                            <span class="training-status ${statusClass}">${statusText}</span>
+                        <div class="training-header">
+                            <div class="training-date">${dateStr} ${timeStr}</div>
+                            <div class="training-duration">
+                                ${duration}分钟 ${archiveStatus} ${auditStatus}
+                            </div>
                         </div>
-                        <div>教练: ${item.coachName || '未知'}</div>
-                        <div>车辆: ${item.vehicleNo || '未知'}</div>
+                        
+                        <div class="training-detail-row">
+                            <span class="detail-label">教练:</span>
+                            <span class="detail-value">${item.coach_name}</span>
+                        </div>
+                        
+                        <div class="training-detail-row">
+                            <span class="detail-label">车辆:</span>
+                            <span class="detail-value">${item.plate_num}</span>
+                        </div>
+                        
+                        <div class="training-detail-row">
+                            <span class="detail-label">训练类型:</span>
+                            <span class="detail-value">${item.train_type}</span>
+                        </div>
+                        
+                        <div class="training-detail-row">
+                            <span class="detail-label">里程:</span>
+                            <span class="detail-value">${item.used_mileage}公里</span>
+                        </div>
+                        
+                        <div class="training-detail-row">
+                            <span class="detail-label">备案时间:</span>
+                            <span class="detail-value">${item.archive_time}</span>
+                        </div>
+                        
+                        ${item.archive_cause && item.is_archive !== '1' ? `
+                        <div class="training-detail-row">
+                            <span class="detail-label">备案原因:</span>
+                            <span class="detail-value" style="color:#d32f2f">${item.archive_cause}</span>
+                        </div>
+                        ` : ''}
+                        
+                        ${item.pro_audit_cause ? `
+                        <div class="training-detail-row">
+                            <span class="detail-label">审核意见:</span>
+                            <span class="detail-value">${item.pro_audit_cause}</span>
+                        </div>
+                        ` : ''}
                     </div>
                 `;
             });
@@ -515,6 +567,5 @@
             }
         });
     </script>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"9311349c48dbfba4","version":"2025.3.0","r":1,"token":"c0e49dd0c69449b9b30df7fe3bad1a99","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}}}' crossorigin="anonymous"></script>
 </body>
 </html>
