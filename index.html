@@ -234,6 +234,13 @@
             background-color: rgba(244, 67, 54, 0.2);
             color: #c62828;
         }
+        #details-countdown {
+            margin-top: 10px;
+            font-size: 14px;
+            text-align: center;
+            font-weight: 600;
+            color: #ff4081;
+        }
         @media (max-width: 480px) {
             .container {
                 padding: 16px;
@@ -291,6 +298,9 @@
                 font-size: 10px;
                 min-width: 35px;
             }
+            #details-countdown {
+                font-size: 13px;
+            }
         }
     </style>
 </head>
@@ -333,6 +343,7 @@
                 <div class="training-list" id="training-list">
                     <!-- 训练详情列表将在这里动态生成 -->
                 </div>
+                <div id="details-countdown"></div>
             </div>
         </div>
         
@@ -387,10 +398,12 @@
         };
 
         let countdownInterval;
+        let detailsCountdownInterval;
         const trainPhaseSelect = document.getElementById('trainPhase');
         const detailPhaseSelect = document.getElementById('detailPhase');
         const outputElement = document.getElementById('output');
         const countdownElement = document.getElementById('countdown');
+        const detailsCountdownElement = document.getElementById('details-countdown');
         const trainingListElement = document.getElementById('training-list');
         const tabs = document.querySelectorAll('.tab');
         const contentSections = document.querySelectorAll('.content-section');
@@ -484,6 +497,12 @@
 
                 const data = await response.json();
                 renderTrainingList(data.rows);
+
+                // 清除之前的倒计时并启动新的
+                if (detailsCountdownInterval) {
+                    clearInterval(detailsCountdownInterval);
+                }
+                detailsCountdownInterval = startDetailsCountdown();
             } catch (error) {
                 trainingListElement.innerHTML = `<div style="color: #d32f2f; padding: 20px; text-align: center;">错误: ${error.message}</div>`;
                 console.error('API错误:', error);
@@ -601,6 +620,24 @@
             return interval;
         }
 
+        function startDetailsCountdown() {
+            let seconds = 10;
+            detailsCountdownElement.textContent = `⏳ 详情刷新倒计时: ${seconds}秒`;
+            
+            const interval = setInterval(() => {
+                seconds--;
+                if (seconds <= 0) {
+                    clearInterval(interval);
+                    detailsCountdownElement.textContent = '🌸 正在刷新详情...';
+                    fetchTrainingDetails();
+                } else {
+                    detailsCountdownElement.textContent = `⏳ 详情刷新倒计时: ${seconds}秒`;
+                }
+            }, 1000);
+
+            return interval;
+        }
+
         // 初始化
         requestNotificationPermission();
         trainPhaseSelect.addEventListener('change', fetchData);
@@ -610,6 +647,9 @@
         window.addEventListener('beforeunload', () => {
             if (countdownInterval) {
                 clearInterval(countdownInterval);
+            }
+            if (detailsCountdownInterval) {
+                clearInterval(detailsCountdownInterval);
             }
         });
     </script>
