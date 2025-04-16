@@ -42,7 +42,7 @@
             margin-bottom: 8px;
             font-weight: 500;
             color: #d81b60;
-            font-size: 15px;
+            font prochainesize: 15px;
         }
         .custom-select {
             position: relative;
@@ -490,6 +490,11 @@
                             <div class="training-duration">
                                 ${duration}分钟 ${archiveStatus} ${auditStatus}
                             </div>
+                        </div>
+                        
+                        <div class="training-detail-row">
+                            <span class="detail-label">公司名称:</span>
+                            <span class="detail-value">${item.corp_name || '未知'}</span>
                         </div>
                         
                         <div class="training-detail-row">
