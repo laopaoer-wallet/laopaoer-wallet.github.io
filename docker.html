@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docker Registry UI</title>
+    <style>
+        :root {
+            --primary-color: #1890ff;
+            --danger-color: #ff4d4f;
+            --success-color: #52c41a;
+            --border-color: #d9d9d9;
+            --text-color: rgba(0, 0, 0, 0.85);
+            --background-color: #f0f2f5;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: white;
+            padding: 16px 24px;
+            box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 2px;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+            margin-bottom: 24px;
+            padding: 24px;
+        }
+        
+        .card-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: var(--text-color);
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 2px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        input:focus {
+            border-color: var(--primary-color);
+            outline: 0;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+        
+        button {
+            padding: 8px 16px;
+            border: 1px solid transparent;
+            border-radius: 2px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #40a9ff;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #ff7875;
+        }
+        
+        .btn-link {
+            color: var(--primary-color);
+            background-color: transparent;
+            border: none;
+        }
+        
+        .btn-link:hover {
+            color: #40a9ff;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        th {
+            font-weight: 500;
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+        
+        tr:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+        
+        .tag {
+            display: inline-block;
+            padding: 0 8px;
+            font-size: 12px;
+            border-radius: 4px;
+            background-color: #fafafa;
+            border: 1px solid var(--border-color);
+        }
+        
+        .tag-blue {
+            color: var(--primary-color);
+            background: #e6f7ff;
+            border-color: #91d5ff;
+        }
+        
+        .alert {
+            padding: 8px 16px;
+            border-radius: 2px;
+            margin-bottom: 16px;
+        }
+        
+        .alert-error {
+            background-color: #fff1f0;
+            border: 1px solid #ffa39e;
+            color: var(--danger-color);
+        }
+        
+        .alert-success {
+            background-color: #f6ffed;
+            border: 1px solid #b7eb8f;
+            color: var(--success-color);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .flex {
+            display: flex;
+        }
+        
+        .justify-between {
+            justify-content: space-between;
+        }
+        
+        .items-center {
+            align-items: center;
+        }
+        
+        .mt-16 {
+            margin-top: 16px;
+        }
+        
+        .mb-16 {
+            margin-bottom: 16px;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">Docker Registry UI</div>
+        <div id="registry-info"></div>
+    </header>
+    
+    <div class="container">
+        <!-- 连接表单 -->
+        <div id="connect-form" class="card">
+            <h2 class="card-title">连接 Docker Registry</h2>
+            <form id="registry-form">
+                <div class="form-group">
+                    <label for="registry-url">Registry 地址</label>
+                    <input type="url" id="registry-url" required placeholder="例如: https://registry.example.com">
+                </div>
+                <div class="form-group">
+                    <label for="username">用户名 (可选)</label>
+                    <input type="text" id="username">
+                </div>
+                <div class="form-group">
+                    <label for="password">密码/Token (可选)</label>
+                    <input type="password" id="password">
+                </div>
+                <button type="submit" class="btn-primary">连接</button>
+            </form>
+        </div>
+        
+        <!-- 错误提示 -->
+        <div id="error-alert" class="alert alert-error hidden"></div>
+        
+        <!-- 仓库列表 -->
+        <div id="repository-list" class="card hidden">
+            <div class="flex justify-between items-center mb-16">
+                <h2 class="card-title">仓库列表</h2>
+                <button id="refresh-repos" class="btn-link">刷新</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>仓库名称</th>
+                        <th>标签数量</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="repo-table-body"></tbody>
+            </table>
+        </div>
+        
+        <!-- 标签列表 -->
+        <div id="tag-list" class="card hidden">
+            <div class="flex justify-between items-center mb-16">
+                <h2 class="card-title">标签列表 - <span id="current-repo"></span></h2>
+                <div>
+                    <button id="back-to-repos" class="btn-link">返回仓库列表</button>
+                    <button id="refresh-tags" class="btn-link ml-16">刷新</button>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>标签名称</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="tag-table-body"></tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+        // 全局状态
+        const state = {
+            registryUrl: '',
+            auth: null,
+            currentRepo: null
+        };
+        
+        // DOM 元素
+        const elements = {
+            connectForm: document.getElementById('connect-form'),
+            registryForm: document.getElementById('registry-form'),
+            registryUrl: document.getElementById('registry-url'),
+            username: document.getElementById('username'),
+            password: document.getElementById('password'),
+            errorAlert: document.getElementById('error-alert'),
+            repositoryList: document.getElementById('repository-list'),
+            repoTableBody: document.getElementById('repo-table-body'),
+            refreshRepos: document.getElementById('refresh-repos'),
+            tagList: document.getElementById('tag-list'),
+            currentRepo: document.getElementById('current-repo'),
+            tagTableBody: document.getElementById('tag-table-body'),
+            backToRepos: document.getElementById('back-to-repos'),
+            refreshTags: document.getElementById('refresh-tags'),
+            registryInfo: document.getElementById('registry-info')
+        };
+        
+        // 初始化
+        function init() {
+            elements.registryForm.addEventListener('submit', handleConnect);
+            elements.refreshRepos.addEventListener('click', fetchRepositories);
+            elements.backToRepos.addEventListener('click', () => {
+                state.currentRepo = null;
+                showRepositoryList();
+            });
+            elements.refreshTags.addEventListener('click', () => {
+                if (state.currentRepo) {
+                    fetchTags(state.currentRepo);
+                }
+            });
+            
+            // 尝试从 localStorage 加载之前的连接
+            const savedConfig = localStorage.getItem('dockerRegistryConfig');
+            if (savedConfig) {
+                const config = JSON.parse(savedConfig);
+                elements.registryUrl.value = config.registryUrl;
+                elements.username.value = config.username || '';
+                elements.password.value = config.password || '';
+            }
+        }
+        
+        // 处理连接表单提交
+        async function handleConnect(e) {
+            e.preventDefault();
+            
+            const registryUrl = elements.registryUrl.value.trim();
+            const username = elements.username.value.trim();
+            const password = elements.password.value.trim();
+            
+            // 保存配置到 localStorage
+            const config = { registryUrl };
+            if (username) {
+                config.username = username;
+                config.password = password;
+            }
+            localStorage.setItem('dockerRegistryConfig', JSON.stringify(config));
+            
+            // 设置状态
+            state.registryUrl = registryUrl;
+            state.auth = username ? { username, password } : null;
+            
+            // 更新 registry 信息显示
+            elements.registryInfo.textContent = registryUrl;
+            
+            // 验证连接
+            try {
+                await fetchCatalog();
+                showRepositoryList();
+                hideError();
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+        
+        // 获取仓库列表
+        async function fetchCatalog() {
+            try {
+                const response = await makeRequest(`${state.registryUrl}/v2/_catalog`);
+                return response.repositories;
+            } catch (error) {
+                throw new Error('无法连接到 Docker Registry: ' + error.message);
+            }
+        }
+        
+        // 获取标签列表
+        async function fetchTags(repository) {
+            try {
+                const response = await makeRequest(`${state.registryUrl}/v2/${repository}/tags/list`);
+                return response.tags || [];
+            } catch (error) {
+                throw new Error(`获取标签列表失败: ${error.message}`);
+            }
+        }
+        
+        // 显示仓库列表
+        async function showRepositoryList() {
+            elements.connectForm.classList.add('hidden');
+            elements.repositoryList.classList.remove('hidden');
+            elements.tagList.classList.add('hidden');
+            
+            try {
+                const repos = await fetchCatalog();
+                renderRepositoryList(repos);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+        
+        // 渲染仓库列表
+        function renderRepositoryList(repositories) {
+            elements.repoTableBody.innerHTML = '';
+            
+            if (repositories.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="3" class="text-center">没有找到仓库</td>';
+                elements.repoTableBody.appendChild(row);
+                return;
+            }
+            
+            repositories.forEach(repo => {
+                const row = document.createElement('tr');
+                
+                // 仓库名称
+                const nameCell = document.createElement('td');
+                nameCell.textContent = repo;
+                row.appendChild(nameCell);
+                
+                // 标签数量 (先显示加载中)
+                const tagsCell = document.createElement('td');
+                const tagSpan = document.createElement('span');
+                tagSpan.className = 'tag tag-blue';
+                tagSpan.textContent = '加载中...';
+                tagsCell.appendChild(tagSpan);
+                row.appendChild(tagsCell);
+                
+                // 操作按钮
+                const actionsCell = document.createElement('td');
+                
+                const viewBtn = document.createElement('button');
+                viewBtn.className = 'btn-link';
+                viewBtn.textContent = '查看详情';
+                viewBtn.addEventListener('click', () => {
+                    state.currentRepo = repo;
+                    showTagList(repo);
+                });
+                actionsCell.appendChild(viewBtn);
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'btn-link';
+                deleteBtn.style.color = 'var(--danger-color)';
+                deleteBtn.textContent = '删除';
+                deleteBtn.addEventListener('click', () => {
+                    if (confirm(`确定要删除仓库 "${repo}" 吗？`)) {
+                        deleteRepository(repo);
+                    }
+                });
+                actionsCell.appendChild(deleteBtn);
+                
+                row.appendChild(actionsCell);
+                elements.repoTableBody.appendChild(row);
+                
+                // 异步获取标签数量
+                fetchTags(repo)
+                    .then(tags => {
+                        tagSpan.textContent = tags.length;
+                    })
+                    .catch(() => {
+                        tagSpan.textContent = '获取失败';
+                    });
+            });
+        }
+        
+        // 显示标签列表
+        async function showTagList(repository) {
+            elements.repositoryList.classList.add('hidden');
+            elements.tagList.classList.remove('hidden');
+            elements.currentRepo.textContent = repository;
+            
+            try {
+                const tags = await fetchTags(repository);
+                renderTagList(tags);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+        
+        // 渲染标签列表
+        function renderTagList(tags) {
+            elements.tagTableBody.innerHTML = '';
+            
+            if (tags.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="2" class="text-center">没有找到标签</td>';
+                elements.tagTableBody.appendChild(row);
+                return;
+            }
+            
+            tags.forEach(tag => {
+                const row = document.createElement('tr');
+                
+                // 标签名称
+                const nameCell = document.createElement('td');
+                nameCell.textContent = tag;
+                row.appendChild(nameCell);
+                
+                // 操作按钮
+                const actionsCell = document.createElement('td');
+                
+                const viewBtn = document.createElement('button');
+                viewBtn.className = 'btn-link';
+                viewBtn.textContent = '详情';
+                viewBtn.addEventListener('click', () => {
+                    viewTagDetails(state.currentRepo, tag);
+                });
+                actionsCell.appendChild(viewBtn);
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'btn-link';
+                deleteBtn.style.color = 'var(--danger-color)';
+                deleteBtn.textContent = '删除';
+                deleteBtn.addEventListener('click', () => {
+                    if (confirm(`确定要删除标签 "${tag}" 吗？`)) {
+                        deleteTag(state.currentRepo, tag);
+                    }
+                });
+                actionsCell.appendChild(deleteBtn);
+                
+                row.appendChild(actionsCell);
+                elements.tagTableBody.appendChild(row);
+            });
+        }
+        
+        // 删除仓库
+        async function deleteRepository(repository) {
+            try {
+                // 先获取所有标签
+                const tags = await fetchTags(repository);
+                
+                // 删除所有标签
+                for (const tag of tags) {
+                    await deleteTag(repository, tag);
+                }
+                
+                // 刷新仓库列表
+                showRepositoryList();
+                showSuccess(`仓库 "${repository}" 删除成功`);
+            } catch (error) {
+                showError(`删除仓库失败: ${error.message}`);
+            }
+        }
+        
+        // 删除标签
+        async function deleteTag(repository, tag) {
+            try {
+                // 1. 获取 manifest digest
+                const manifestUrl = `${state.registryUrl}/v2/${repository}/manifests/${tag}`;
+                const headers = {
+                    'Accept': 'application/vnd.docker.distribution.manifest.v2+json'
+                };
+                
+                const response = await makeRequest(manifestUrl, 'HEAD', headers);
+                const digest = response.headers.get('Docker-Content-Digest');
+                
+                if (!digest) {
+                    throw new Error('无法获取 manifest digest');
+                }
+                
+                // 2. 删除 manifest
+                await makeRequest(`${state.registryUrl}/v2/${repository}/manifests/${digest}`, 'DELETE', headers);
+                
+                // 刷新标签列表
+                fetchTags(repository).then(tags => {
+                    renderTagList(tags);
+                    showSuccess(`标签 "${tag}" 删除成功`);
+                });
+            } catch (error) {
+                showError(`删除标签失败: ${error.message}`);
+            }
+        }
+        
+        // 查看标签详情
+        function viewTagDetails(repository, tag) {
+            alert(`仓库: ${repository}\n标签: ${tag}\n\n详细功能可以在实际应用中实现`);
+        }
+        
+        // 显示错误
+        function showError(message) {
+            elements.errorAlert.textContent = message;
+            elements.errorAlert.classList.remove('hidden');
+        }
+        
+        // 隐藏错误
+        function hideError() {
+            elements.errorAlert.classList.add('hidden');
+        }
+        
+        // 显示成功消息
+        function showSuccess(message) {
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success mt-16';
+            alert.textContent = message;
+            document.querySelector('.container').appendChild(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 3000);
+        }
+        
+        // 发起请求
+        async function makeRequest(url, method = 'GET', headers = {}) {
+            const options = {
+                method,
+                headers: {
+                    ...headers,
+                    'Accept': 'application/vnd.docker.distribution.manifest.v2+json'
+                }
+            };
+            
+            if (state.auth) {
+                options.headers['Authorization'] = `Basic ${btoa(`${state.auth.username}:${state.auth.password}`)}`;
+            }
+            
+            const response = await fetch(url, options);
+            
+            if (!response.ok) {
+                throw new Error(`请求失败: ${response.status} ${response.statusText}`);
+            }
+            
+            // 对于 HEAD 请求，直接返回 response
+            if (method === 'HEAD') {
+                return response;
+            }
+            
+            // 尝试解析 JSON
+            try {
+                return await response.json();
+            } catch (error) {
+                return {};
+            }
+        }
+        
+        // 初始化应用
+        init();
+    </script>
+</body>
+</html>
