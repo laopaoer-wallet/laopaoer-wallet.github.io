@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Docker Registry UI</title>
     <style>
-        /* 之前的样式保持不变 */
         :root {
             --primary-color: #1890ff;
             --danger-color: #ff4d4f;
@@ -75,7 +74,7 @@
             font-weight: 500;
         }
         
-        input, select {
+        input {
             width: 100%;
             padding: 8px 12px;
             border: 1px solid var(--border-color);
@@ -84,7 +83,7 @@
             transition: all 0.3s;
         }
         
-        input:focus, select:focus {
+        input:focus {
             border-color: var(--primary-color);
             outline: 0;
             box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
@@ -180,12 +179,6 @@
             color: var(--success-color);
         }
         
-        .alert-info {
-            background-color: #e6f7ff;
-            border: 1px solid #91d5ff;
-            color: var(--primary-color);
-        }
-        
         .hidden {
             display: none;
         }
@@ -227,14 +220,6 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-        
-        .cors-info {
-            background-color: #fff7e6;
-            border: 1px solid #ffd591;
-            padding: 12px;
-            border-radius: 4px;
-            margin-bottom: 16px;
-        }
     </style>
 </head>
 <body>
@@ -244,50 +229,22 @@
     </header>
     
     <div class="container">
-        <!-- CORS 提示信息 -->
-        <div id="cors-info" class="cors-info">
-            <strong>CORS 提示:</strong> 由于 Docker Registry 默认不支持 CORS，请选择以下方式之一：
-            <ol>
-                <li>使用 CORS 代理（推荐）</li>
-                <li>在浏览器中禁用 CORS（仅开发环境）</li>
-                <li>配置 Registry 服务器启用 CORS</li>
-            </ol>
-        </div>
-        
         <!-- 连接表单 -->
         <div id="connect-form" class="card">
             <h2 class="card-title">连接 Docker Registry</h2>
             <form id="registry-form">
                 <div class="form-group">
                     <label for="registry-url">Registry 地址</label>
-                    <input type="url" id="registry-url" required placeholder="例如: https://hub.kaifa000.com" value="https://hub.kaifa000.com">
+                    <input type="url" id="registry-url" required placeholder="例如: https://registry.example.com">
                 </div>
-                
-                <div class="form-group">
-                    <label for="cors-proxy">CORS 代理设置</label>
-                    <select id="cors-proxy">
-                        <option value="none">不使用代理（需要服务器支持 CORS）</option>
-                        <option value="corsanywhere">cors-anywhere 代理</option>
-                        <option value="allorigins">allorigins.win 代理</option>
-                        <option value="custom">自定义代理</option>
-                    </select>
-                </div>
-                
-                <div id="custom-proxy-group" class="form-group hidden">
-                    <label for="custom-proxy">自定义代理地址</label>
-                    <input type="url" id="custom-proxy" placeholder="例如: https://my-proxy.com/">
-                </div>
-                
                 <div class="form-group">
                     <label for="username">用户名 (可选)</label>
                     <input type="text" id="username">
                 </div>
-                
                 <div class="form-group">
                     <label for="password">密码/Token (可选)</label>
                     <input type="password" id="password">
                 </div>
-                
                 <button type="submit" class="btn-primary">连接</button>
             </form>
         </div>
@@ -339,15 +296,7 @@
         const state = {
             registryUrl: '',
             auth: null,
-            currentRepo: null,
-            corsProxy: 'none'
-        };
-        
-        // CORS 代理配置
-        const corsProxies = {
-            'corsanywhere': 'https://cors-anywhere.herokuapp.com/',
-            'allorigins': 'https://api.allorigins.win/raw?url=',
-            'custom': ''
+            currentRepo: null
         };
         
         // DOM 元素
@@ -355,9 +304,6 @@
             connectForm: document.getElementById('connect-form'),
             registryForm: document.getElementById('registry-form'),
             registryUrl: document.getElementById('registry-url'),
-            corsProxy: document.getElementById('cors-proxy'),
-            customProxyGroup: document.getElementById('custom-proxy-group'),
-            customProxy: document.getElementById('custom-proxy'),
             username: document.getElementById('username'),
             password: document.getElementById('password'),
             errorAlert: document.getElementById('error-alert'),
@@ -369,14 +315,12 @@
             tagTableBody: document.getElementById('tag-table-body'),
             backToRepos: document.getElementById('back-to-repos'),
             refreshTags: document.getElementById('refresh-tags'),
-            registryInfo: document.getElementById('registry-info'),
-            corsInfo: document.getElementById('cors-info')
+            registryInfo: document.getElementById('registry-info')
         };
         
         // 初始化
         function init() {
             elements.registryForm.addEventListener('submit', handleConnect);
-            elements.corsProxy.addEventListener('change', handleCorsProxyChange);
             elements.refreshRepos.addEventListener('click', fetchRepositories);
             elements.backToRepos.addEventListener('click', () => {
                 state.currentRepo = null;
@@ -392,24 +336,9 @@
             const savedConfig = localStorage.getItem('dockerRegistryConfig');
             if (savedConfig) {
                 const config = JSON.parse(savedConfig);
-                elements.registryUrl.value = config.registryUrl || '';
-                elements.corsProxy.value = config.corsProxy || 'none';
-                elements.customProxy.value = config.customProxy || '';
+                elements.registryUrl.value = config.registryUrl;
                 elements.username.value = config.username || '';
                 elements.password.value = config.password || '';
-                
-                // 显示/隐藏自定义代理输入框
-                handleCorsProxyChange();
-            }
-        }
-        
-        // 处理 CORS 代理选择变化
-        function handleCorsProxyChange() {
-            const selectedProxy = elements.corsProxy.value;
-            if (selectedProxy === 'custom') {
-                elements.customProxyGroup.classList.remove('hidden');
-            } else {
-                elements.customProxyGroup.classList.add('hidden');
             }
         }
         
@@ -418,14 +347,11 @@
             e.preventDefault();
             
             const registryUrl = elements.registryUrl.value.trim();
-            const corsProxy = elements.corsProxy.value;
-            const customProxy = elements.customProxy.value.trim();
             const username = elements.username.value.trim();
             const password = elements.password.value.trim();
             
             // 保存配置到 localStorage
-            const config = { registryUrl, corsProxy };
-            if (customProxy) config.customProxy = customProxy;
+            const config = { registryUrl };
             if (username) {
                 config.username = username;
                 config.password = password;
@@ -434,13 +360,7 @@
             
             // 设置状态
             state.registryUrl = registryUrl;
-            state.corsProxy = corsProxy;
             state.auth = username ? { username, password } : null;
-            
-            // 更新自定义代理配置
-            if (corsProxy === 'custom' && customProxy) {
-                corsProxies.custom = customProxy;
-            }
             
             // 更新 registry 信息显示
             elements.registryInfo.textContent = registryUrl;
@@ -450,33 +370,16 @@
                 await fetchCatalog();
                 showRepositoryList();
                 hideError();
-                elements.corsInfo.classList.add('hidden');
             } catch (error) {
                 showError(error.message);
-                elements.corsInfo.classList.remove('hidden');
             }
-        }
-        
-        // 构建请求 URL（处理 CORS 代理）
-        function buildRequestUrl(path) {
-            const proxy = corsProxies[state.corsProxy];
-            
-            if (state.corsProxy === 'none' || !proxy) {
-                return `${state.registryUrl}${path}`;
-            }
-            
-            if (state.corsProxy === 'allorigins') {
-                return `${proxy}${encodeURIComponent(state.registryUrl + path)}`;
-            }
-            
-            return `${proxy}${state.registryUrl}${path}`;
         }
         
         // 获取仓库列表
         async function fetchCatalog() {
             try {
-                const response = await makeRequest('/v2/_catalog');
-                return response.repositories || [];
+                const response = await makeRequest(`${state.registryUrl}/v2/_catalog`);
+                return response.repositories;
             } catch (error) {
                 throw new Error('无法连接到 Docker Registry: ' + error.message);
             }
@@ -485,7 +388,7 @@
         // 获取标签列表
         async function fetchTags(repository) {
             try {
-                const response = await makeRequest(`/v2/${repository}/tags/list`);
+                const response = await makeRequest(`${state.registryUrl}/v2/${repository}/tags/list`);
                 return response.tags || [];
             } catch (error) {
                 throw new Error(`获取标签列表失败: ${error.message}`);
@@ -653,7 +556,7 @@
         async function deleteTag(repository, tag) {
             try {
                 // 1. 获取 manifest digest
-                const manifestUrl = `/v2/${repository}/manifests/${tag}`;
+                const manifestUrl = `${state.registryUrl}/v2/${repository}/manifests/${tag}`;
                 const headers = {
                     'Accept': 'application/vnd.docker.distribution.manifest.v2+json'
                 };
@@ -666,7 +569,7 @@
                 }
                 
                 // 2. 删除 manifest
-                await makeRequest(`/v2/${repository}/manifests/${digest}`, 'DELETE', headers);
+                await makeRequest(`${state.registryUrl}/v2/${repository}/manifests/${digest}`, 'DELETE', headers);
                 
                 // 刷新标签列表
                 fetchTags(repository).then(tags => {
@@ -707,8 +610,7 @@
         }
         
         // 发起请求
-        async function makeRequest(path, method = 'GET', headers = {}) {
-            const url = buildRequestUrl(path);
+        async function makeRequest(url, method = 'GET', headers = {}) {
             const options = {
                 method,
                 headers: {
