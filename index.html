@@ -90,16 +90,16 @@
                 </div>
             </div>
 
-            <!-- QR Code Section (Collapsible / Toggle) -->
+            <!-- QR Code Section (Default Expanded) -->
             <div class="pt-2 border-t border-slate-700/50 flex flex-col items-center gap-3">
                 <button onclick="toggleQR()" class="text-xs text-slate-400 hover:text-slate-200 flex items-center gap-1.5 transition-colors">
                     <i class="fa-solid fa-qrcode"></i>
-                    <span id="qr-btn-text">显示扫码导入二维码</span>
+                    <span id="qr-btn-text">隐藏二维码</span>
                 </button>
                 
-                <div id="qr-container" class="hidden flex-col items-center bg-white p-3 rounded-xl shadow-lg mt-2">
+                <div id="qr-container" class="flex flex-col items-center bg-white p-3 rounded-xl shadow-lg mt-1">
                     <div id="qrcode"></div>
-                    <p class="text-[10px] text-slate-600 mt-2 font-medium">使用 v2rayN / Shadowrocket 扫码导入</p>
+                    <p class="text-[10px] text-slate-600 mt-2 font-medium">使用 Shadowrocket / v2rayN 扫码导入</p>
                 </div>
             </div>
 
@@ -127,29 +127,28 @@
             }, 2000);
         }
 
-        // QRCode generation & toggle logic
-        let qrGenerated = false;
+        // Generate QR Code on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            const nodeLink = document.getElementById("node-link").value;
+            new QRCode(document.getElementById("qrcode"), {
+                text: nodeLink,
+                width: 160,
+                height: 160,
+                colorDark : "#0f172a",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.L
+            });
+        });
+
+        // Toggle visibility logic
         function toggleQR() {
             const qrContainer = document.getElementById("qr-container");
             const btnText = document.getElementById("qr-btn-text");
-            const nodeLink = document.getElementById("node-link").value;
 
             if (qrContainer.classList.contains("hidden")) {
                 qrContainer.classList.remove("hidden");
                 qrContainer.classList.add("flex");
                 btnText.innerText = "隐藏二维码";
-
-                if (!qrGenerated) {
-                    new QRCode(document.getElementById("qrcode"), {
-                        text: nodeLink,
-                        width: 160,
-                        height: 160,
-                        colorDark : "#0f172a",
-                        colorLight : "#ffffff",
-                        correctLevel : QRCode.CorrectLevel.L
-                    });
-                    qrGenerated = true;
-                }
             } else {
                 qrContainer.classList.add("hidden");
                 qrContainer.classList.remove("flex");
