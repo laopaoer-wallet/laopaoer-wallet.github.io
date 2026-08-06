@@ -3,270 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>系统维护中 - 即将回归</title>
+    <title>公益节点分享</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 图标 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- QRCode.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        :root {
-            --primary-color: #6c5ce7;
-            --secondary-color: #00cec9;
-            --dark-color: #2d3436;
-            --light-color: #f5f6fa;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--dark-color);
-            color: var(--light-color);
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-image: 
-                radial-gradient(circle at 25% 25%, rgba(108, 92, 231, 0.2) 0%, transparent 50%),
-                radial-gradient(circle at 75% 75%, rgba(0, 206, 201, 0.2) 0%, transparent 50%);
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top right, #1f2937, #111827);
         }
-        
-        .maintenance-container {
-            text-align: center;
-            max-width: 800px;
-            padding: 2rem;
-            position: relative;
-            z-index: 10;
-            backdrop-filter: blur(10px);
-            background-color: rgba(45, 52, 54, 0.7);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            animation: float 6s ease-in-out infinite;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
-        }
-        
-        h1 {
-            font-size: 3.5rem;
-            margin-bottom: 1rem;
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-        }
-        
-        p {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            line-height: 1.6;
-            opacity: 0.9;
-        }
-        
-        .countdown {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin: 2rem 0;
-        }
-        
-        .countdown-item {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 1rem;
-            border-radius: 10px;
-            min-width: 80px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .countdown-value {
-            font-size: 2.5rem;
-            font-weight: bold;
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        
-        .countdown-label {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            opacity: 0.7;
-            margin-top: 0.5rem;
-        }
-        
-        .progress-container {
-            width: 100%;
-            height: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 5px;
-            margin: 2rem 0;
-            overflow: hidden;
-        }
-        
-        .progress-bar {
-            height: 100%;
-            width: 65%;
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-            border-radius: 5px;
-            animation: progress-animation 2s ease-in-out infinite;
-            position: relative;
-        }
-        
-        @keyframes progress-animation {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        
-        .social-links {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-top: 2rem;
-        }
-        
-        .social-link {
-            color: var(--light-color);
-            background: rgba(255, 255, 255, 0.1);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            text-decoration: none;
-        }
-        
-        .social-link:hover {
-            background: var(--primary-color);
-            transform: translateY(-3px);
-        }
-        
-        .floating-elements {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-        }
-        
-        .floating-element {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 50%;
-            animation: float-element 15s linear infinite;
-        }
-        
-        @keyframes float-element {
-            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
-            10% { opacity: 0.3; }
-            90% { opacity: 0.3; }
-            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        .glass-card {
+            background: rgba(31, 41, 55, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
     </style>
 </head>
-<body>
-    <div class="floating-elements" id="floatingElements"></div>
-    
-    <div class="maintenance-container">
-        <h1>系统升级中</h1>
-        <p>我们正在对系统进行重要升级，以提供更好的用户体验。<br>维护工作预计很快完成，感谢您的耐心等待。</p>
+<body class="min-h-screen text-slate-100 flex items-center justify-center p-4 sm:p-6">
+
+    <div class="max-w-2xl w-full space-y-6">
         
-        <div class="countdown">
-            <div class="countdown-item">
-                <div class="countdown-value" id="hours">03</div>
-                <div class="countdown-label">小时</div>
+        <!-- Header -->
+        <div class="text-center space-y-2">
+            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>公益免费节点 · 节点运行中</span>
             </div>
-            <div class="countdown-item">
-                <div class="countdown-value" id="minutes">45</div>
-                <div class="countdown-label">分钟</div>
+            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+                HK-CF-ECH | 自动优选
+            </h1>
+            <p class="text-xs sm:text-sm text-slate-400">基于 Cloudflare & ECH 加密的安全高速连接</p>
+        </div>
+
+        <!-- Main Card -->
+        <div class="glass-card rounded-2xl p-6 shadow-2xl space-y-6">
+            
+            <!-- Key Details Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs sm:text-sm">
+                <div class="p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
+                    <div class="text-slate-400 text-xs mb-1">协议类型</div>
+                    <div class="font-semibold text-emerald-400 flex items-center gap-1.5">
+                        <i class="fa-solid font-mono text-xs">⚡</i> VLESS
+                    </div>
+                </div>
+                <div class="p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
+                    <div class="text-slate-400 text-xs mb-1">传输协议</div>
+                    <div class="font-semibold text-slate-200">WebSocket</div>
+                </div>
+                <div class="p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
+                    <div class="text-slate-400 text-xs mb-1">安全加密</div>
+                    <div class="font-semibold text-sky-400 flex items-center gap-1">
+                        <i class="fa-solid fa-lock text-xs"></i> TLS + ECH
+                    </div>
+                </div>
+                <div class="p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
+                    <div class="text-slate-400 text-xs mb-1">地址/端口</div>
+                    <div class="font-semibold text-slate-200 truncate" title="saas.sin.fan:2087">saas.sin.fan:2087</div>
+                </div>
+                <div class="p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
+                    <div class="text-slate-400 text-xs mb-1">伪装域名 (SNI)</div>
+                    <div class="font-semibold text-slate-200 truncate" title="hk.ainio.cc.cd">hk.ainio.cc.cd</div>
+                </div>
+                <div class="p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
+                    <div class="text-slate-400 text-xs mb-1">ALPN</div>
+                    <div class="font-semibold text-slate-200 truncate">h2, http/1.1</div>
+                </div>
             </div>
-            <div class="countdown-item">
-                <div class="countdown-value" id="seconds">22</div>
-                <div class="countdown-label">秒</div>
+
+            <!-- Vless Link Output & Copy -->
+            <div class="space-y-2">
+                <label class="text-xs font-medium text-slate-400 flex justify-between items-center">
+                    <span>节点链接 (URI)</span>
+                    <span id="copy-status" class="text-emerald-400 text-xs hidden">已复制到剪贴板！</span>
+                </label>
+                <div class="relative">
+                    <input type="text" readonly id="node-link" value="vless://9bc70c95-353d-498a-b8d6-df76fbb5cd21@saas.sin.fan:2087?alpn=h2%2Chttp%2F1.1&ech=AGH%2BDQBdAAAgACBU7e8e%2FSzrzFSOoQa7OJLH%2B3bU9eXwXljHWIRzvycHA&encryption=none&fp=chrome&host=hk.ainio.cc.cd&path=%2Findex&security=tls&sni=hk.ainio.cc.cd&type=ws#HK-CF-ECH%20%7C%20%E8%87%AA%E5%8A%A8%E4%BC%98%E9%80%89" 
+                           class="w-full bg-slate-900/80 border border-slate-700/80 rounded-xl px-4 py-3 pr-24 text-xs font-mono text-slate-300 focus:outline-none focus:border-emerald-500 transition-colors truncate">
+                    <button onclick="copyLink()" class="absolute right-1.5 top-1.5 bottom-1.5 px-4 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold rounded-lg text-xs transition-colors flex items-center gap-1.5 shadow-lg shadow-emerald-500/20">
+                        <i class="fa-regular fa-copy"></i>
+                        <span>复制</span>
+                    </button>
+                </div>
             </div>
+
+            <!-- QR Code Section (Collapsible / Toggle) -->
+            <div class="pt-2 border-t border-slate-700/50 flex flex-col items-center gap-3">
+                <button onclick="toggleQR()" class="text-xs text-slate-400 hover:text-slate-200 flex items-center gap-1.5 transition-colors">
+                    <i class="fa-solid fa-qrcode"></i>
+                    <span id="qr-btn-text">显示扫码导入二维码</span>
+                </button>
+                
+                <div id="qr-container" class="hidden flex-col items-center bg-white p-3 rounded-xl shadow-lg mt-2">
+                    <div id="qrcode"></div>
+                    <p class="text-[10px] text-slate-600 mt-2 font-medium">使用 v2rayN / Shadowrocket 扫码导入</p>
+                </div>
+            </div>
+
         </div>
-        
-        <div class="progress-container">
-            <div class="progress-bar"></div>
+
+        <!-- Footer -->
+        <div class="text-center text-xs text-slate-500 space-y-1">
+            <p>💡 本节点仅供学习交流与网络加速使用，请遵守当地法律法规。</p>
         </div>
-        
-        <p>升级进度: 65%</p>
-        
-        <div class="social-links">
-            <a href="#" class="social-link">📱</a>
-            <a href="#" class="social-link">✉️</a>
-            <a href="#" class="social-link">💬</a>
-            <a href="#" class="social-link">🔔</a>
-        </div>
+
     </div>
 
     <script>
-        // 创建浮动元素
-        function createFloatingElements() {
-            const container = document.getElementById('floatingElements');
-            const elementCount = 15;
-            
-            for (let i = 0; i < elementCount; i++) {
-                const element = document.createElement('div');
-                element.classList.add('floating-element');
-                
-                // 随机大小
-                const size = Math.random() * 30 + 10;
-                element.style.width = `${size}px`;
-                element.style.height = `${size}px`;
-                
-                // 随机位置
-                element.style.left = `${Math.random() * 100}%`;
-                element.style.bottom = `-${size}px`;
-                
-                // 随机动画延迟和持续时间
-                const delay = Math.random() * 5;
-                const duration = Math.random() * 10 + 10;
-                element.style.animationDelay = `${delay}s`;
-                element.style.animationDuration = `${duration}s`;
-                
-                container.appendChild(element);
+        // Copy link logic
+        function copyLink() {
+            const copyText = document.getElementById("node-link");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(copyText.value);
+
+            const status = document.getElementById("copy-status");
+            status.classList.remove("hidden");
+            setTimeout(() => {
+                status.classList.add("hidden");
+            }, 2000);
+        }
+
+        // QRCode generation & toggle logic
+        let qrGenerated = false;
+        function toggleQR() {
+            const qrContainer = document.getElementById("qr-container");
+            const btnText = document.getElementById("qr-btn-text");
+            const nodeLink = document.getElementById("node-link").value;
+
+            if (qrContainer.classList.contains("hidden")) {
+                qrContainer.classList.remove("hidden");
+                qrContainer.classList.add("flex");
+                btnText.innerText = "隐藏二维码";
+
+                if (!qrGenerated) {
+                    new QRCode(document.getElementById("qrcode"), {
+                        text: nodeLink,
+                        width: 160,
+                        height: 160,
+                        colorDark : "#0f172a",
+                        colorLight : "#ffffff",
+                        correctLevel : QRCode.CorrectLevel.L
+                    });
+                    qrGenerated = true;
+                }
+            } else {
+                qrContainer.classList.add("hidden");
+                qrContainer.classList.remove("flex");
+                btnText.innerText = "显示扫码导入二维码";
             }
         }
-        
-        // 倒计时模拟
-        function updateCountdown() {
-            let hours = 3;
-            let minutes = 45;
-            let seconds = 22;
-            
-            setInterval(() => {
-                seconds--;
-                if (seconds < 0) {
-                    seconds = 59;
-                    minutes--;
-                    if (minutes < 0) {
-                        minutes = 59;
-                        hours--;
-                    }
-                }
-                
-                document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
-                document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
-                document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
-            }, 1000);
-        }
-        
-        // 初始化
-        window.onload = function() {
-            createFloatingElements();
-            updateCountdown();
-        };
     </script>
 </body>
 </html>
