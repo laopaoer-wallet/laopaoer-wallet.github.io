@@ -1,1 +1,55 @@
-Ban!!
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WHARFHOTELS 组织架构 · 虚拟列表 Demo</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="top-main">
+      <h1>WHARFHOTELS 组织架构</h1>
+      <p class="sub">虚拟列表全量渲染 · 仅挂载可视行 DOM</p>
+    </div>
+    <div class="metrics" id="metrics">
+      <div class="metric"><span class="k">状态</span><span class="v" id="m-status">加载中</span></div>
+      <div class="metric"><span class="k">下载</span><span class="v" id="m-fetch">—</span></div>
+      <div class="metric"><span class="k">解析</span><span class="v" id="m-parse">—</span></div>
+      <div class="metric"><span class="k">展开拍平</span><span class="v" id="m-flatten">—</span></div>
+      <div class="metric"><span class="k">可视 DOM</span><span class="v" id="m-dom">—</span></div>
+      <div class="metric"><span class="k">总节点</span><span class="v" id="m-total">—</span></div>
+    </div>
+  </header>
+
+  <section class="toolbar">
+    <input id="search" type="search" placeholder="搜索部门 / 岗位名称或编码" autocomplete="off" />
+    <div class="toolbar-right">
+      <div class="seg" id="locale">
+        <button type="button" data-locale="zh-HK" class="on">繁</button>
+        <button type="button" data-locale="zh-CN">简</button>
+        <button type="button" data-locale="en">EN</button>
+      </div>
+      <button type="button" id="btn-expand">全部展开</button>
+      <button type="button" id="btn-collapse">全部折叠</button>
+    </div>
+  </section>
+
+  <div class="legend">
+    <span class="pill company">公司</span>
+    <span class="pill department">部门</span>
+    <span class="pill position">岗位</span>
+    <span class="hint" id="hint">默认全量展开，滚动时只渲染可视区域大约 30 行。</span>
+  </div>
+
+  <div class="tree-wrap">
+    <div id="viewport" class="viewport" tabindex="0">
+      <div id="spacer" class="spacer"></div>
+      <div id="rows" class="rows"></div>
+      <div id="empty" class="empty" hidden>没有匹配的组织或岗位</div>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
